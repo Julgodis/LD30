@@ -1,0 +1,22 @@
+/* Julgodis list */
+
+* Make a game in 48 hours
+* Enable Google Analytics
+
+
+
+* Add units
+
+
+
+
+/* IDEA */
+
+Connected Worlds -
+
+2 Castles that hate each others presents
+is fighting over 'the land'.
+
+YOU are one of these castle and you playing agienst the COMPUTER
+
+
