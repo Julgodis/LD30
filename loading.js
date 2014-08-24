@@ -74,6 +74,7 @@ Loader.prototype =
 		game.load.spritesheet('unit1', "assets/unit1.png", 16, 21);
 		game.load.spritesheet('unit2', "assets/unit2.png", 22, 22);
 		game.load.spritesheet('unit3', "assets/unit3.png", 22, 22);
+		game.load.spritesheet('unit4', "assets/unit4.png", 44, 44);
 
 
 		game.load.image('bodypart1', "assets/bodypart1.png");

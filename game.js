@@ -21,8 +21,8 @@ game.score = {
 	goldPP: 0,
 };
 
-costs = [15, 60, 100, 0];
-cds = [1.2, 2.1, 2.8, 0];
+costs = [15, 60, 100, 800];
+cds = [1.2, 2.1, 2.8, 10.0];
 
 game.state.add('start', Start);
 game.state.add('loading', Loader);

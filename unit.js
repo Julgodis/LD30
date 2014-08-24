@@ -60,7 +60,7 @@ Unit.prototype =
 		game.extra.ingame.units_layer.add(this.sprite);
 
 		if(this.player == 0)
-			this.sprite.tint = rgbToHexi(128, 188, 128);
+			this.sprite.tint = rgbToHexi(128, 240, 128);
 
 		this.sprite.base = {};
 		this.sprite.base.x = this.sprite.x;
@@ -141,7 +141,7 @@ Unit.prototype =
 	{
 		if(this.health <= 0) return;
 		game.extra.ingame.showDamage(damage, { x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height + 12)*this.scale},
-			{ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height-6)*this.scale});
+			{ x: this.sprite.base.x - (12*this.scale)/2, y: this.sprite.base.y - (this.size.height-6)*this.scale});
 		this.health -= damage;
 		if(this.health <= 0)
 		{

@@ -285,15 +285,15 @@ InGame.prototype =
 		this.gui_buttons_rovers = new Array();
 		this.gui_buttons_overs = new Array();
 		this.gui_buttons_cooldowns = new Array();
-		for(var i = 0; i < 3; i++)
+		for(var i = 0; i < 4; i++)
 		{
-			var t = game.add.sprite(game.width - 80*(game.extra.scale/1.4) + (11 + 14.0*i)*(game.extra.scale/1.4), 3.5*(game.extra.scale/1.4), 'unit'+(i+1), null, game.extra.world);
+			var t = game.add.sprite(game.width - 80*(game.extra.scale/1.4) + (11 + 14.2*i)*(game.extra.scale/1.4), 3.5*(game.extra.scale/1.4), 'unit'+(i+1), null, game.extra.world);
 			t.smoothed = false;
 			t.anchor.setTo(1, 0);
-			t.scale.setTo(game.extra.scale/3.5, game.extra.scale/3.5);
+			t.scale.setTo((game.extra.scale/3.5) * (i==3?0.5:1), (game.extra.scale/3.5) * (i==3?0.5:1));
 			this.gui_buttons_icons[i] = t;
 
-			var c = game.add.bitmapText(game.width - 80*(game.extra.scale/1.4) + (11 + 14.0*i)*(game.extra.scale/1.4) - (11*8)/3 - 4, 82, 'pixel_font_gold', ""+costs[i] , 12);
+			var c = game.add.bitmapText(game.width - 80*(game.extra.scale/1.4) + (11 + 14.0*i)*(game.extra.scale/1.4) - (11*8)/3 - 14, 82, 'pixel_font_gold', ""+costs[i] , 12);
 			this.gui_buttons_costs[i] = c;
 
 			var x = game.width - (78-(11+3)*i)*(game.extra.scale/1.4);
@@ -755,9 +755,17 @@ InGame.prototype =
 								this.player_units.push(u1);
 								u1.speed *= -1;
 							}
-							else 
+							else if(i==2)
 							{
 								var u1 = new UnitTest3(1, game.extra.length+64, game.height - 256, game);
+								this.units.push(u1);
+								this.player_units.push(u1);
+								u1.speed *= -1;
+							}
+
+							else 
+							{
+								var u1 = new UnitTest4(1, game.extra.length+64, game.height - 256, game);
 								this.units.push(u1);
 								this.player_units.push(u1);
 								u1.speed *= -1;
@@ -805,7 +813,7 @@ InGame.prototype =
 	showDead: function(object)
 	{
 
-		if(this.deadParticles.length < 50)
+		/*if(this.deadParticles.length < 50)
 		{
 		    var emitter = game.add.emitter(object.x, object.y, 16);
 		    this.deadParticles.push(emitter);
@@ -823,7 +831,7 @@ InGame.prototype =
 		    emitter.x = object.x - game.extra.ingame.map.x;
 
 			emitter.start(true, 1500, null, 16);
-		}
+		}*/
     	//emitter.forEach(function(a) { a.scale.setTo(game.extra.scale, game.extra.scale); }, this);
 
 	    
@@ -831,7 +839,7 @@ InGame.prototype =
 	showDamage: function(d, object, body)
 	{
 		this.hurt.play();
-		if(this.deadParticles.length < 50)
+		/*if(this.deadParticles.length < 50)
 		{
 		    var emitter = game.add.emitter(body.x, body.y, 8);
 			this.deadParticles.push(emitter);
@@ -849,7 +857,7 @@ InGame.prototype =
 		    emitter.start(true, 2000, null, 8);
 		    emitter.x = object.x - game.extra.ingame.map.x;
 
-		}
+		}*/
 		var damageText = game.add.bitmapText(object.x, object.y, 'pixel_font_red', "-"+d, 10, this.infoTextGroup);
 
 		var tween = game.add.tween(damageText);
@@ -952,10 +960,10 @@ InGame.prototype =
 		var y = game.height/2 - 22*(game.extra.scale) + 32;
 		this.winlose.text1 = game.add.bitmapText(x, y, 'pixel_font_gold', 'Victory!', 24);
 		this.winlose.text2 = game.add.bitmapText(x, y+32+4, 'pixel_font', 'You have defeated', 13);
-		this.winlose.text3 = game.add.bitmapText(x, y+48+2+4, 'pixel_font', 'the enemy and destory', 13);
-		this.winlose.text4 = game.add.bitmapText(x, y+64+4+4, 'pixel_font', 'the connection between', 13);
-		this.winlose.text5 = game.add.bitmapText(x, y+80+6+4, 'pixel_font', 'their world and', 13);
-		this.winlose.text6 = game.add.bitmapText(x, y+96+8+4, 'pixel_font', 'ours!', 13);
+		this.winlose.text3 = game.add.bitmapText(x, y+48+2+4, 'pixel_font', 'the enemy and ', 13);
+		this.winlose.text4 = game.add.bitmapText(x, y+64+4+4, 'pixel_font', 'destory the ', 13);
+		this.winlose.text5 = game.add.bitmapText(x, y+80+6+4, 'pixel_font', 'connection between', 13);
+		this.winlose.text6 = game.add.bitmapText(x, y+96+8+4, 'pixel_font', 'their world and ours!', 13);
 
 		this.winlose.text7 = game.add.bitmapText(x, y+112+8+10, 'pixel_font', 'score: ' + game.score.total, 13);
 

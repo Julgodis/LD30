@@ -163,7 +163,7 @@ var UnitTest3 = function(p, x, y, game)
 	//Unit.init(this, x, y, 'unit1', 0, game.extra.scale);
 	var scale = (game.extra.scale/3)-0.5 * game.rnd.frac();
 
-	Unit.apply(this,arguments);
+	//Unit.apply(this,arguments);
 	this.init(p, x, y, 'unit3', 0, scale);
 
 	this.jumpCounter = game.rnd.integerInRange(1000, 3000);

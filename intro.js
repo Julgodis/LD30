@@ -16,12 +16,12 @@ Intro.prototype =
 		var w = game.width;
 		var h = game.height;
 
-		gameLabel = game.add.bitmapText((w / 2) - 200, (h / 4)-40, 'pixel_font', '------', 30);
+		gameLabel = game.add.bitmapText((w / 2) - 200, (h / 4)-40, 'pixel_font', 'Your World!', 30);
 		creditLabel = game.add.bitmapText((w / 2) - 200, (h / 4)+20, 'pixel_font', 'By Julgodis 2014', 16);
 		ldLabel = game.add.bitmapText((w / 2) - 200, (h / 4)+40, 'pixel_font', 'Entry for Ludum Dare 30', 16);
 
 		game.score.music = game.add.audio('music');
-		game.score.music.volume = 0.2;
+		game.score.music.volume = 0.4;
 		game.score.music.loop = true;
 		game.score.music.play();
 
