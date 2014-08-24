@@ -9,9 +9,17 @@ var game = new Phaser.Game(1200, 600, Phaser.AUTO, 'game');
 game.extra = {
 	world: null,
 	scale: 8.0,
-	treeCount: 10,
+	treeCount: 68,
+	cloudCount: 10,
 	length: 0,
+	ingame: null
 };
+
+game.score = {
+	gold: 100.0
+};
+
+costs = [10, 20, 30, 0];
 
 game.state.add('start', Start);
 game.state.add('loading', Loader);
@@ -20,6 +28,19 @@ game.state.add('game', InGame);
 
 // Run game!
 game.state.start('start');
+
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
 
 /*
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

@@ -35,6 +35,7 @@ Castle.prototype =
 		this.sprite.base = {};
 		this.sprite.base.x = this.sprite.x;
 		this.sprite.base.y = this.sprite.y;
+		this.sprite.base.parallel = 0.9;
 
 		this.sprite.scale.setTo(game.extra.scale, game.extra.scale);
 		this.sprite.smoothed = false;
