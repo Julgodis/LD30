@@ -53,9 +53,14 @@ Unit.prototype =
 		type.type = type;
 		this.scale = scale;
 
-		this.sprite = game.add.sprite(x, y, image, null, game.extra.world);
+		this.sprite = game.add.sprite(x, y, image);
+		this.sprite.name = "unit" + type;
 		this.group = game.add.group();
 		this.sprite.anchor.setTo(0.5, 1.0);
+		game.extra.ingame.units_layer.add(this.sprite);
+
+		if(this.player == 0)
+			this.sprite.tint = rgbToHexi(128, 188, 128);
 
 		this.sprite.base = {};
 		this.sprite.base.x = this.sprite.x;
@@ -76,7 +81,7 @@ Unit.prototype =
 
 		if (this.lastHealth !== this.health) 
 		{
-		    this.healthbar2.scale.setTo((this.health / this.lastHealth), 2);
+		    this.healthbar2.scale.setTo(12*(this.health / this.lastHealth), 2);
 		}
 
 		this.lastHealth = this.health;
@@ -134,6 +139,7 @@ Unit.prototype =
 	},
 	attack: function (damage)
 	{
+		if(this.health <= 0) return;
 		game.extra.ingame.showDamage(damage, { x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height + 12)*this.scale},
 			{ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height-6)*this.scale});
 		this.health -= damage;
@@ -142,8 +148,13 @@ Unit.prototype =
 			game.extra.ingame.showDead({ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height-6)*this.scale});
 			if(this.player != 1)
 			{
+				game.score.total += 1 + this.gold;
 				game.score.gold += this.gold;
 				game.extra.ingame.showGold({ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height +12)*this.scale, gold:this.gold});
+			}
+			else
+			{
+				game.extra.ingame.enemy.gold += this.gold;
 			}
 			this.kill();
 		}

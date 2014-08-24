@@ -22,7 +22,7 @@ var UnitTest = function(p, x, y, game)
 
 	this.targetRange = 16*scale*0.8;
 	this.speed = 1.3 + 0.05*game.rnd.frac();
-	this.gold = 10;
+	this.gold = 15;
 
 	this.size = { width: 16, height: 21 };
 };
@@ -48,18 +48,21 @@ UnitTest.prototype.addUnitAnimations = function()
 
 UnitTest.prototype.updateUnit = function()
 {
-	if(this.target == null)
+	if(this.mode != Mode.FightCastle)
 	{
-		this.mode = Mode.Idle;
-	}
-	else 
-	{
-		this.mode = Mode.FightUnit;
-		var dx = this.target.sprite.base.x - this.sprite.base.x;
-		if(Math.abs(dx) > this.basicAttackRange)
+		if(this.target == null)
 		{
-			this.target = null;
 			this.mode = Mode.Idle;
+		}
+		else 
+		{
+			this.mode = Mode.FightUnit;
+			var dx = this.target.sprite.base.x - this.sprite.base.x;
+			if(Math.abs(dx) > this.basicAttackRange)
+			{
+				this.target = null;
+				this.mode = Mode.Idle;
+			}
 		}
 	}
 
@@ -70,16 +73,40 @@ UnitTest.prototype.updateUnit = function()
 	}
 	else if(this.mode == Mode.FightUnit)
 	{
+		this.sprite.animations.stop();
 		this.velocity.x = 0;
 		if(game.time.now > this.basicAttackTimer)
 		{
+			this.sprite.animations.stop();
 			this.sprite.play('basic_attack');
 			this.target.attack(this.basicAttackDamage);
+			game.extra.ingame.hit.play();
 			this.basicAttackTimer = game.time.now + (1/this.basicAttackSpeed)*1000 + game.rnd.integerInRange(-200, 200);
 
 			if(this.target.isDead())
 			{
 				this.target = null;
+				this.mode = Mode.Idle;
+			}
+		}
+	}
+	else if(this.mode == Mode.FightCastle)
+	{
+		this.velocity.x = 0;
+		if(game.time.now > this.basicAttackTimer)
+		{
+			this.sprite.animations.stop();
+			var t = game.extra.ingame.castle1;
+			if(this.player == 1)
+				t = game.extra.ingame.castle2;
+			this.sprite.play('basic_attack');
+			game.extra.ingame.hit.play();
+			t.attack(this.basicAttackDamage);
+			this.basicAttackTimer = game.time.now + (1/this.basicAttackSpeed)*1000 + game.rnd.integerInRange(-200, 200);
+
+			if(t.isDead())
+			{
+				t = null;
 				this.mode = Mode.Idle;
 			}
 		}

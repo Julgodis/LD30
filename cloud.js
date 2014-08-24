@@ -20,8 +20,8 @@ Cloud.prototype =
 		this.sprite = game.add.sprite(x1, y1, 'cloud' + game.rnd.integerInRange(1, 2), null, game.extra.world);
 		this.sprite.anchor.setTo(0.5, 0.5);
 
-		var tx = Math.min(f*0.2*255+10, 255);
-		this.sprite.tint  = rgbToHexi(255 - tx, 255 - tx, 255 - tx);
+		this.tx = Math.min(f*0.2*255+10, 255);
+		this.sprite.tint  = rgbToHexi(255 - this.tx, 255 - this.tx, 255 - this.tx);
 
 		this.sprite.base = {};
 		this.sprite.base.x = this.sprite.x;
@@ -37,6 +37,7 @@ Cloud.prototype =
 	},
 	update: function()
 	{
+		this.sprite.tint  = rgbToHexi(255 - this.tx, 255 - this.tx, 255 - this.tx);
 		this.direction += Math.cos((this.r+game.time.now)/1000.0)*0.001;
 		this.direction = Math.max(-1, Math.min(1, this.direction));
 
@@ -50,5 +51,11 @@ Cloud.prototype =
 			this.direction *= -1;
 
 		//this.sprite.base.parallel += Math.cos(game.time.now/100.0)*.0005;
+	},
+	get_darker: function()
+	{
+		var tx2 = Math.min(this.tx+160, 255);
+		return tx2;
+
 	}
 };

@@ -16,15 +16,15 @@ var UnitTest2 = function(p, x, y, game)
 	this.jumpCounter = game.rnd.integerInRange(1000, 3000);
 	this.dojump = false;
 
-	this.basicAttackSpeed = 2.9;
-	this.basicAttackDamage = 26;
+	this.basicAttackSpeed = 3.9;
+	this.basicAttackDamage = 28;
 	this.basicAttackTimer = 0;
-	this.maxHealth = 200.0;
-	this.health = 200.0;
+	this.maxHealth = 250.0;
+	this.health = 250.0;
 
 	this.targetRange = 22*scale*0.4;
-	this.speed = 0.5 + 0.05*game.rnd.frac();
-	this.gold = 20;
+	this.speed = 0.6 + 0.05*game.rnd.frac();
+	this.gold = 65;
 
 	this.size = { width: 22, height: 22 };
 };
@@ -49,19 +49,22 @@ UnitTest2.prototype.addUnitAnimations = function()
 };
 
 UnitTest2.prototype.updateUnit = function()
-{
-	if(this.target == null)
+{	
+	if(this.mode != Mode.FightCastle)
 	{
-		this.mode = Mode.Idle;
-	}
-	else 
-	{
-		this.mode = Mode.FightUnit;
-		var dx = this.target.sprite.base.x - this.sprite.base.x;
-		if(Math.abs(dx) > this.basicAttackRange)
+		if(this.target == null)
 		{
-			this.target = null;
 			this.mode = Mode.Idle;
+		}
+		else 
+		{
+			this.mode = Mode.FightUnit;
+			var dx = this.target.sprite.base.x - this.sprite.base.x;
+			if(Math.abs(dx) > this.basicAttackRange)
+			{
+				this.target = null;
+				this.mode = Mode.Idle;
+			}
 		}
 	}
 
@@ -76,13 +79,37 @@ UnitTest2.prototype.updateUnit = function()
 		if(game.time.now > this.basicAttackTimer)
 		{
 			this.sprite.animations.stop();
+			this.sprite.animations.stop();
 			this.sprite.play('basic_attack');
 			this.target.attack(this.basicAttackDamage);
+			game.extra.ingame.hit.play();
 			this.basicAttackTimer = game.time.now + (1/this.basicAttackSpeed)*1000 + game.rnd.integerInRange(-200, 200);
 
 			if(this.target.isDead())
 			{
 				this.target = null;
+				this.mode = Mode.Idle;
+			}
+		}
+	}
+	else if(this.mode == Mode.FightCastle)
+	{
+
+		this.velocity.x = 0;
+		if(game.time.now > this.basicAttackTimer)
+		{
+			this.sprite.animations.stop();
+			var t = game.extra.ingame.castle1;
+			if(this.player == 1)
+				t = game.extra.ingame.castle2;
+			this.sprite.play('basic_attack');
+			t.attack(this.basicAttackDamage);
+			game.extra.ingame.hit.play();
+			this.basicAttackTimer = game.time.now + (1/this.basicAttackSpeed)*1000 + game.rnd.integerInRange(-200, 200);
+
+			if(t.isDead())
+			{
+				t = null;
 				this.mode = Mode.Idle;
 			}
 		}

@@ -16,14 +16,18 @@ game.extra = {
 };
 
 game.score = {
-	gold: 100.0
+	gold: 100.0,
+	total: 100,
+	goldPP: 0,
 };
 
-costs = [10, 20, 30, 0];
+costs = [15, 60, 100, 0];
+cds = [1.2, 2.1, 2.8, 0];
 
 game.state.add('start', Start);
 game.state.add('loading', Loader);
 
+game.state.add('intro', Intro);
 game.state.add('game', InGame);
 
 // Run game!
@@ -41,6 +45,9 @@ Array.prototype.remove = function() {
     return this;
 };
 
+function OpenInNewTab(url) {
+	window.location = url;
+}
 
 /*
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

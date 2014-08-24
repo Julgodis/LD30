@@ -58,6 +58,25 @@ Arrow.prototype.update = function()
 
 	if(this.main.player == 0) // 1 == Player
 	{
+		if(this.base.x >= game.extra.length - 64 - 17*game.extra.scale/2)
+		{
+
+			this.main.isShoting  = false;
+			game.extra.ingame.castle1.attack(this.main.basicAttackDamage);
+			this.main.basicAttackTimer = game.time.now + (1/this.main.basicAttackSpeed)*1000 + game.rnd.integerInRange(-100, 100);
+			game.extra.ingame.hit.play();
+			if(game.extra.ingame.castle2.isDead())
+			{
+				this.mode = Mode.Idle;
+			}
+
+			this.main.target = null;
+			this.main.mode = Mode.Idle;
+	    	this.main.isShoting  = false;
+	    	this.kill();
+			return;
+		}
+
 		for(var i = 0; i < game.extra.ingame.player_units.length; i++)
 		{
 			var s = game.extra.ingame.player_units[i];
@@ -75,7 +94,7 @@ Arrow.prototype.update = function()
 				this.main.isShoting  = false;
 				s.attack(this.main.basicAttackDamage);
 				this.main.basicAttackTimer = game.time.now + (1/this.main.basicAttackSpeed)*1000 + game.rnd.integerInRange(-100, 100);
-
+				game.extra.ingame.hit.play();
 				this.main.target = null;
 				this.main.mode = Mode.Idle;
 		    	this.main.isShoting  = false;
@@ -86,6 +105,25 @@ Arrow.prototype.update = function()
 	}
 	else 
 	{
+		if(this.base.x <= 64 + 17*game.extra.scale/2)
+		{
+			//console.log(game.extra);
+			this.main.isShoting  = false;
+			game.extra.ingame.castle2.attack(this.main.basicAttackDamage);
+			this.main.basicAttackTimer = game.time.now + (1/this.main.basicAttackSpeed)*1000 + game.rnd.integerInRange(-100, 100);
+			game.extra.ingame.hit.play();
+			if(game.extra.ingame.castle2.isDead())
+			{
+				this.mode = Mode.Idle;
+			}
+
+			this.main.target = null;
+			this.main.mode = Mode.Idle;
+	    	this.main.isShoting  = false;
+	    	this.kill();
+			return;
+		}
+
 		for(var i = 0; i < game.extra.ingame.enemy_units.length; i++)
 		{
 			var s = game.extra.ingame.enemy_units[i];
@@ -103,7 +141,7 @@ Arrow.prototype.update = function()
 				this.main.isShoting  = false;
 				s.attack(this.main.basicAttackDamage);
 				this.main.basicAttackTimer = game.time.now + (1/this.main.basicAttackSpeed)*1000 + game.rnd.integerInRange(-100, 100);
-
+				game.extra.ingame.hit.play();
 				this.main.target = null;
 				this.main.mode = Mode.Idle;
 		    	this.main.isShoting  = false;
@@ -131,15 +169,15 @@ var UnitTest3 = function(p, x, y, game)
 	this.jumpCounter = game.rnd.integerInRange(1000, 3000);
 	this.dojump = false;
 
-	this.basicAttackSpeed = 0.8;
-	this.basicAttackDamage = 18;
+	this.basicAttackSpeed = 1.5;
+	this.basicAttackDamage = 19;
 	this.basicAttackTimer = 0;
 	this.basicArrowSpeed = 0.3;
 	this.isShoting = false;
 
 	this.targetRange = 22*scale*7;
 	this.speed = 0.9 + 0.05*game.rnd.frac();
-	this.gold = 35;
+	this.gold = 105;
 	this.arrows = new Array();
 
 	this.size = { width: 22, height: 22 };
@@ -166,18 +204,21 @@ UnitTest3.prototype.addUnitAnimations = function()
 
 UnitTest3.prototype.updateUnit = function()
 {
-	if(this.target == null)
+	if(this.mode != Mode.FightCastle)
 	{
-		this.mode = Mode.Idle;
-	}
-	else 
-	{
-		this.mode = Mode.FightUnit;
-		var dx = this.target.sprite.base.x - this.sprite.base.x;
-		if(Math.abs(dx) > this.basicAttackRange)
+		if(this.target == null)
 		{
-			this.target = null;
 			this.mode = Mode.Idle;
+		}
+		else 
+		{
+			this.mode = Mode.FightUnit;
+			var dx = this.target.sprite.base.x - this.sprite.base.x;
+			if(Math.abs(dx) > this.basicAttackRange)
+			{
+				this.target = null;
+				this.mode = Mode.Idle;
+			}
 		}
 	}
 
@@ -191,7 +232,20 @@ UnitTest3.prototype.updateUnit = function()
 		this.velocity.x = 0;
 		if(game.time.now > this.basicAttackTimer && !this.isShoting)
 		{
+			this.sprite.animations.stop();
 			this.shotAt(this.target);
+		}
+	}
+	else if(this.mode == Mode.FightCastle)
+	{
+		this.velocity.x = 0;
+		if(game.time.now > this.basicAttackTimer && !this.isShoting)
+		{
+			this.sprite.animations.stop();
+			var t = game.extra.ingame.castle1;
+			if(this.player == 1)
+				t = game.extra.ingame.castle2;
+			this.shotAt(t);
 		}
 	}
 
@@ -224,6 +278,8 @@ UnitTest3.prototype.updateUnit = function()
 
 UnitTest3.prototype.shotAt = function(target)
 {
+	game.extra.ingame.bow.play();
+	//console.log("fire!");
 	this.isShoting  = true;
 	this.sprite.animations.stop();
 	this.sprite.play('basic_attack');

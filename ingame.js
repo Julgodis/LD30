@@ -12,6 +12,7 @@ InGame.prototype =
 	//preload: function() {} 
 
 	sky: null,
+	darksky: null,
 	background1: null,
 	background2: null,
 	background3: null,
@@ -19,6 +20,7 @@ InGame.prototype =
 	fpsText: null,
 	infoTextGroup: null,
 	deadParticles: null,
+	explosions: null,
 
 	gui_base: null,
 	gui_buttons_rects: null,
@@ -31,10 +33,22 @@ InGame.prototype =
 
 	trees: null,
 	clouds: null,
+	castle1: null,
+	castle2: null,
 	units: null,
 	player_units: null,
 	enemy_units: null,
 	map: { x: 0, vx: 0 },
+	units_layer: null,
+
+	gameover: false,
+	extimer: 0,
+	excount: 10,
+	expos: null,
+	cleanup: false,
+
+	menu: true,
+	preview: -1,
 	create: function()
 	{
 		game.extra.ingame = this;
@@ -42,6 +56,10 @@ InGame.prototype =
 		game.world.setBounds(0, 0, game.extra.length, 600);
 
 		/* SKY */
+
+		this.darksky = game.add.sprite(0, game.height, 'dark_sky');
+		this.darksky.smoothed = false;
+		this.darksky.anchor.setTo(0, 1);
 
 		this.sky = game.add.sprite(0, game.height, 'sky');
 		this.sky.smoothed = false;
@@ -89,6 +107,7 @@ InGame.prototype =
 		this.background3.base.parallel = 0.3;
 
 
+
 		/* Add Trees */
 
 		this.trees = new Array();
@@ -130,14 +149,14 @@ InGame.prototype =
 
 			var dscale = ((game.extra.treeCount-i-1.0)/(game.extra.treeCount));
 				dscale = Math.max(0.1, Math.min(dscale + (game.rnd.normal()*0.2-0.1), 1));
-				console.log(dscale);
+
 			tree.init(x, y, game.extra.scale - ((game.extra.treeCount-i-1.0)/(game.extra.treeCount))*6 - 1.0, ttype);
 			this.trees.push(tree);
 		}
 
 		/* Add ground */
 
-		this.ground = game.add.game.add.sprite(0, game.height, 'ground', null, game.extra.world);
+		this.ground = game.add.sprite(0, game.height, 'ground', null, game.extra.world);
 		this.ground.smoothed = false;
 		this.ground.anchor.setTo(0, 1);
 		this.ground.scale.setTo(game.extra.scale, game.extra.scale);
@@ -148,40 +167,41 @@ InGame.prototype =
 		this.ground.base.parallel = 1.0;
 
 
-		var castle1 = new Castle();
-		castle1.type = 1; // 1 is Player
-		castle1.init();
+		this.castle1 = new Castle();
+		this.castle1.player = 1; // 1 is Player
+		this.castle1.init();
 
-		var castle2 = new Castle();
-		castle2.type = 0; // 0 is Computer
-		castle2.init();
+		this.castle2 = new Castle();
+		this.castle2.player = 0; // 0 is Computer
+		this.castle2.init();
 
 		/* Add Units */
 		this.units = new Array();
 		this.player_units = new Array();
 		this.enemy_units = new Array();
 
-		for(var i = 0; i < 10; i++)
+		this.units_layer = game.add.group(game.extra.world);
+		/*for(var i = 0; i < 10; i++)
 		{
 			if(game.rnd.frac() <= 0.5)
 			{
-				var u1 = new UnitTest(0, -64 - 350*i, game.height-256, game);
+				var u1 = new UnitTest(0, -64 - 150*i, game.height-256, game);
 				this.units.push(u1);
 				this.enemy_units.push(u1);
 			}
 			else {if(game.rnd.frac() <= 0.5)
 			{
-				var u1 = new UnitTest2(0, -64 - 350*i, game.height-256, game);
+				var u1 = new UnitTest2(0, -64 - 150*i, game.height-256, game);
 				this.units.push(u1);
 				this.enemy_units.push(u1);
 			} else 
 			{
-				var u1 = new UnitTest3(0, -64 - 350*i, game.height-256, game);
+				var u1 = new UnitTest3(0, -64 - 150*i, game.height-256, game);
 				this.units.push(u1);
 				this.enemy_units.push(u1);
 			}}
-		}/*
-
+		}*/
+/*
 		for(var i = 0; i < 10; i++)
 		{
 			if(game.rnd.frac() <= 0.5)
@@ -240,6 +260,8 @@ InGame.prototype =
 		}
 
 
+		this.explosions = game.add.group(game.extra.world);
+
 		/* GUI */
 
 		game.time.advancedTiming = true;
@@ -296,6 +318,94 @@ InGame.prototype =
 
 			this.gui_buttons_cooldowns[i] = { on: false, time: 2000, current: 0 };
 		}
+
+		this.scope = game.add.sprite(0, 0, 'scope');
+		this.scope.alpha = 0;
+/*
+		this.gameover = true;
+		this.expos = this.castle2;
+		this.loser = 0;*/
+
+		/* MENU */
+		this.guimenu = game.add.sprite(game.width/2, game.height/2, 'gui_menu');
+		this.guimenu.anchor.setTo(0.5, 0.5);
+		this.guimenu.smoothed = false;
+		this.guimenu.scale.setTo(game.extra.scale, game.extra.scale);
+
+		var x = game.width/2 - 30*(game.extra.scale) + 20;
+		var y = game.height/2 - 21*(game.extra.scale) + 32;
+		this.guimenu.text1 = game.add.bitmapText(x, y, 'pixel_font_gold', 'Hello world!', 22);
+		this.guimenu.text2 = game.add.bitmapText(x, y+32+4, 'pixel_font', 'This world has been invaded', 11);
+		this.guimenu.text3 = game.add.bitmapText(x, y+48+4, 'pixel_font', 'by world connecters!', 11);
+		this.guimenu.text4 = game.add.bitmapText(x, y+64+2+4, 'pixel_font', 'World Connecters search different', 11);
+		this.guimenu.text5 = game.add.bitmapText(x, y+80+4+4, 'pixel_font', 'worlds and connect them with their', 11);
+		this.guimenu.text6 = game.add.bitmapText(x, y+96+6+4, 'pixel_font', 'own home world. The only way to ', 10);
+		this.guimenu.text7 = game.add.bitmapText(x, y+112+7+4, 'pixel_font', 'survive and save this world,', 10);
+		this.guimenu.text8 = game.add.bitmapText(x, y+128+8+4, 'pixel_font', 'is to fight back!', 10);
+
+
+		this.guimenu.buttontext1 = game.add.bitmapText(game.width/2 - 4*(game.extra.scale), game.height/2 - 21*(game.extra.scale) + 35*(game.extra.scale), 'pixel_font', 'Play', 15);
+
+		this.guimenu.rects = new Array();
+		this.guimenu.overs = new Array();
+		this.guimenu.clicks = new Array();
+		this.guimenu.buttons = new Array();
+
+		var x = game.width/2 - (30)*(game.extra.scale) + 5*game.extra.scale;
+		var y = game.height/2 - (21)*(game.extra.scale) + 32*game.extra.scale;
+		var w = (50)*(game.extra.scale);
+		var h = (6)*(game.extra.scale);
+		var r = { x: x, y: y, width: w, height: h };
+		this.guimenu.rects[0] = r;
+
+		var o2 = game.add.sprite(x, y+(game.extra.scale)-0.1, 'gui_overbutton');
+		o2.alpha = 0.3;
+		o2.visible = false;
+		o2.scale.setTo((game.extra.scale)*(50/9), (game.extra.scale)*(6/14));
+		this.guimenu.overs[0] = o2;
+
+		this.guimenu.clicks[0] = function() 
+		{ 
+			game.extra.ingame.menu = false; 
+			 game.extra.ingame.preview = 0; 
+			 game.extra.ingame.guimenu.visible = false;
+			 game.extra.ingame.guimenu.text1.visible = false;
+			 game.extra.ingame.guimenu.text2.visible = false;
+			 game.extra.ingame.guimenu.text3.visible = false;
+			 game.extra.ingame.guimenu.text4.visible = false;
+			 game.extra.ingame.guimenu.text5.visible = false;
+			 game.extra.ingame.guimenu.text6.visible = false;
+			 game.extra.ingame.guimenu.text7.visible = false;
+			 game.extra.ingame.guimenu.text8.visible = false;
+
+		 	 game.extra.ingame.guimenu.overs[0].visible = false;
+			 game.extra.ingame.guimenu.buttontext1.visible = false;
+
+
+		};
+
+		this.guimenu.buttons[0] = true;
+
+		this.click = game.add.audio('click');
+		this.click.volume = 0.5;
+
+		this.bow = game.add.audio('bow');
+		this.bow.volume = 0.5;
+
+		this.sexplode = game.add.audio('explode');
+		this.sexplode.volume = 0.5;
+
+		this.hit = game.add.audio('hit');
+		this.hit.volume = 0.5;
+
+		this.hurt = game.add.audio('hurt');
+		this.hurt.volume = 0.5;
+
+		this.gold = game.add.audio('gold');
+		this.gold.volume = 0.5;
+
+		this.enemy = new EnemyAI();
+		this.enemy.init();
 	},
 	shutdown: function()
 	{
@@ -303,72 +413,8 @@ InGame.prototype =
 	},
 	update: function()
 	{
-		this.gui_gold_text.setText(""+game.score.gold);
-
-		var mx = game.input.x;
-		var my = game.input.y;
-
-		if (this.game.time.fps !== 0) {
-		    this.fpsText.setText(this.game.time.fps + ' FPS');
-		}		
-		if(my > 150)
-		{
-			if(mx <= 200)
-				this.map.vx -= 0.015 + ((200-mx)*(200-mx))/3200000;
-			else if(mx >= game.width-200)
-				this.map.vx += 0.015 + ((mx-game.width-200)*(mx-game.width-200))/3200000;
-		}
-
-		if(this.map.vx > 12) this.map.vx = 12;
-		if(this.map.vx < -12) this.map.vx = -12;
-
-		this.map.x += this.map.vx;
-		if(this.map.x < 0) this.map.x = 0;
-		if(this.map.x+game.width > game.extra.length) this.map.x = game.extra.length-game.width;
-		this.map.vx *= 0.98;
-
 		game.extra.world.forEachAlive(this.updateObjectPosition, this);
-		this.units.forEach(function (unit)
-		{
-			if(unit.isDead()) return;
-			if(unit.player == 0) // 1 == Player
-			{
-				for(var i = 0; i < this.player_units.length; i++)
-				{
-					var punit = this.player_units[i];
-					if(punit.isDead()) continue;
-					var dx = Math.abs(punit.sprite.base.x - unit.sprite.base.x);
-
-					if(unit.targetRange >= dx)
-					{
-						unit.target = punit;
-						break;
-					}
-				} 
-
-			}
-			else 
-			{
-				for(var i = 0; i < this.enemy_units.length; i++)
-				{
-					var punit = this.enemy_units[i];
-					if(punit.isDead()) continue;
-					var dx = Math.abs(punit.sprite.base.x - unit.sprite.base.x);
-
-					if(unit.targetRange >= dx)
-					{
-						unit.target = punit;
-						break;
-					}
-				} 
-
-			}
-			unit.update();
-
-		}, this);
-
 		for(var i = 0; i < this.clouds.length; i++) this.clouds[i].update();
-
 		for (var i = 0; i < this.deadParticles.length; i++) {
 		    var a = this.deadParticles[i];
 		    if(game.time.now > a.timeout)
@@ -388,92 +434,377 @@ InGame.prototype =
 			}
 		}
 
-		for(var i = 0; i < this.gui_buttons_rects.length; i++)
+		if(this.menu)
 		{
-			var r = this.gui_buttons_rects[i];
-			var c = this.gui_buttons_cooldowns[i];
+			var mx = game.input.x;
+			var my = game.input.y;
 
-			if(c.on)
+
+			for(var i = 0; i < 1; i++)
 			{
-				if(game.time.now > c.current) {
-					c.on = false;
-					this.gui_buttons_cooldowns[i].on = false;
-				}
+				var r = this.guimenu.rects[i];
 
-			}
-
-			if(game.score.gold < costs[i])
-				this.gui_buttons_rovers[i].visible = true;
-			else
-				this.gui_buttons_rovers[i].visible = false;
-
-			if(c.on)
-			{
-
-				var diff = (c.current - game.time.now)/c.time;
-				this.gui_buttons_overs[i].visible = true;
-				this.gui_buttons_overs[i].scale.y = (1-diff)*(game.extra.scale/1.4);
-				this.gui_buttons_overs[i].y = r.y+(game.extra.scale/1.4)+14*(game.extra.scale/1.4)*diff;
-			}
-			else
-			{
-				this.gui_buttons_overs[i].scale.y = game.extra.scale/1.4;
-				this.gui_buttons_overs[i].visible = false;
-			}
-
-			if(mx > r.x && mx < r.x+r.width) {
-				if(my > r.y && my < r.y+r.height)
-				{
-					if(!c.on && game.score.gold >= costs[i])
-						this.gui_buttons_overs[i].visible = true;
-
-					if(game.input.activePointer.isDown && !c.on && game.score.gold >= costs[i])
+				this.guimenu.overs[i].visible = false;
+				if(mx >= r.x && mx <= r.x+r.width) {
+					if(my >= r.y && my <= r.y+r.height)
 					{
-						// Buy unit
-						if(i==0)
-						{
-							var u1 = new UnitTest(1, game.extra.length+64, game.height - 256, game);
-							this.units.push(u1);
-							this.player_units.push(u1);
-							u1.speed *= -1;
+						this.guimenu.overs[i].visible = true;
 
-						}
-						else if(i==1)
+						if(game.input.activePointer.isDown && this.guimenu.buttons[i])
 						{
-							var u1 = new UnitTest2(1, game.extra.length+64, game.height - 256, game);
-							this.units.push(u1);
-							this.player_units.push(u1);
-							u1.speed *= -1;
+							this.click.play();
+							this.guimenu.clicks[i]();
+							this.guimenu.buttons[i] = false;
 						}
-						else 
-						{
-							var u1 = new UnitTest3(1, game.extra.length+64, game.height - 256, game);
-							this.units.push(u1);
-							this.player_units.push(u1);
-							u1.speed *= -1;
-						}
-
-						game.score.gold -= costs[i];
-						var t = 2000;
-						this.gui_buttons_cooldowns[i] = { on:true, current: game.time.now+t, time:t };
-						break;
 					}
 				}
+
 			}
 
+			return;
+		}
+
+		if(this.preview != -1)
+		{
+			if(this.preview == 0)
+				this.map.x -= 1.4;
+			else if(this.preview == 1)
+				this.map.x += 1.4;
+
+			if(this.map.vx > 18) this.map.vx = 18;
+			if(this.map.vx < -18) this.map.vx = -18;
+
+			this.map.x += this.map.vx;
+			if(this.map.x < 0) 
+			{
+				this.map.x = 0;
+				this.preview = 1;
+			}
+			if(this.map.x+game.width > game.extra.length) 
+		    {
+			 	this.map.x = game.extra.length-game.width;
+			 	this.preview = -1;
+
+	 			var goldText = game.add.bitmapText(game.width/2, game.height/2, 'pixel_font', 'Start!', 12);
+				var tween = game.add.tween(goldText);
+				tween.to({ alpha: 0.0, y: game.height/2 - 100 }, 3000);
+				tween.onComplete.add(function() { 
+					goldText.destroy();
+		            tween.onComplete.removeAll();
+		            tween.stop();
+		            tween = null;
+				});
+				tween.start();
+			}
+			this.map.vx *= 0.98;
+
+			return;
+
+		}
+
+		if(this.gameover && !this.show)
+		{
+			if(this.excount >= 0 && game.time.now >= this.extimer)
+			{
+				this.explode(this.expos);
+				this.excount--;
+				this.extimer = game.time.now + 50;
+
+				if(this.excount < 0)
+					this.expos.kill();
+			}
+			else if(this.excount < 0)
+			{
+				if(this.loser == 1)
+				{
+					if(this.map.x <= 0)
+					{
+						this.showLose();
+
+					}
+					else this.map.vx -= 0.2;
+				}
+				else 
+				{
+					if(this.map.x+game.width >= game.extra.length)
+					{
+						this.showWin();
+
+					}
+					else this.map.vx += 0.2;
+				}
+			}
+
+			if(!this.cleanup)
+			{
+				this.gui_base.kill();
+				this.gui_gold_text.visible = false;
+				this.gui_gold_text_u.visible = false;
+
+				for(var i = 0; i < this.gui_buttons_rects.length; i++)
+				{
+					//this.gui_buttons_rects[i].kill();
+					//this.gui_buttons_cooldowns[i].kill();
+					this.gui_buttons_costs[i].visible = false;
+					this.gui_buttons_overs[i].kill();
+					this.gui_buttons_icons[i].kill();
+					this.gui_buttons_rovers[i].kill();
+				}
+
+				this.units.forEach(function (unit)
+				{
+					if(unit.isDead()) return;
+					this.createExplosion(unit.sprite.base.x, unit.sprite.base.y, 0.3);
+					unit.kill();
+				}, this);
+				this.cleanup = true;
+			}
+		}
+		else if(this.show)
+		{
+
+			var mx = game.input.x;
+			var my = game.input.y;
+
+
+			for(var i = 0; i < 2; i++)
+			{
+				var r = this.winlose.rects[i];
+
+				this.winlose.overs[i].visible = false;
+
+				//console.log("X: " + mx + " > " + r.x + " && " + mx + " < " + (r.x+r.width));
+				if(mx >= r.x && mx <= r.x+r.width) {
+				//console.log("Y: " + my + " > " + r.y + " && " + my + " < " + (r.y+r.height));
+
+					if(my >= r.y && my <= r.y+r.height)
+					{
+						//console.log("over");
+						this.winlose.overs[i].visible = true;
+
+						if(game.input.activePointer.isDown && this.winlose.buttons[i])
+						{
+							this.click.play();
+							this.winlose.clicks[i]();
+							this.winlose.buttons[i] = false;
+						}
+					}
+				}
+
+			}
+
+		}
+		else
+			this.gui_gold_text.setText(""+game.score.gold);
+
+		var mx = game.input.x;
+		var my = game.input.y;
+
+		if (this.game.time.fps !== 0) {
+		    this.fpsText.setText(this.game.time.fps + ' FPS');
+		}	
+
+		if(!this.gameover)
+		{
+			if(my > 150)
+			{
+				if(mx <= 200)
+					this.map.vx -= 0.015 + ((200-mx)*(200-mx))/3200000;
+				else if(mx >= game.width-200)
+					this.map.vx += 0.015 + ((mx-game.width-200)*(mx-game.width-200))/3200000;
+			}
+		}
+
+		if(this.map.vx > 18) this.map.vx = 18;
+		if(this.map.vx < -18) this.map.vx = -18;
+
+		this.map.x += this.map.vx;
+		if(this.map.x < 0) this.map.x = 0;
+		if(this.map.x+game.width > game.extra.length) this.map.x = game.extra.length-game.width;
+		this.map.vx *= 0.98;
+
+		if(!this.gameover)
+		{
+			this.enemy.update();
+			if(game.time.now >= game.score.goldPP)
+			{
+				game.score.gold++;
+				game.score.total++;
+				game.score.goldPP = game.time.now + 100;
+			}
+
+
+			this.units.forEach(function (unit)
+			{
+				if(unit.isDead()) return;
+				if(unit.player == 0) // 1 == Player
+				{
+					var cdx = Math.abs(unit.sprite.base.x - (game.extra.length-128));
+					if(unit.targetRange >= cdx)
+					{
+						unit.target = null;
+						unit.mode = Mode.FightCastle;
+						unit.update();
+						return;
+					}
+
+					for(var i = 0; i < this.player_units.length; i++)
+					{
+						var punit = this.player_units[i];
+						if(punit.isDead()) continue;
+						var dx = Math.abs(punit.sprite.base.x - unit.sprite.base.x);
+
+						if(unit.targetRange >= dx)
+						{
+							unit.target = punit;
+							break;
+						}
+					} 
+
+				}
+				else 
+				{
+					var cdx = Math.abs(unit.sprite.base.x - (128));
+					if(unit.targetRange >= cdx)
+					{
+						unit.target = null;
+						unit.mode = Mode.FightCastle;
+						unit.update();
+						return;
+					}
+
+					for(var i = 0; i < this.enemy_units.length; i++)
+					{
+						var punit = this.enemy_units[i];
+						if(punit.isDead()) continue;
+						var dx = Math.abs(punit.sprite.base.x - unit.sprite.base.x);
+
+						if(unit.targetRange >= dx)
+						{
+							unit.target = punit;
+							break;
+						}
+					} 
+
+				}
+				unit.update();
+
+			}, this);
+
+			this.castle1.update();
+			this.castle2.update();
+		}
+
+
+		if(!this.gameover)
+		{
+			for(var i = 0; i < this.gui_buttons_rects.length; i++)
+			{
+				var r = this.gui_buttons_rects[i];
+				var c = this.gui_buttons_cooldowns[i];
+
+				if(c.on)
+				{
+					if(game.time.now > c.current) {
+						c.on = false;
+						this.gui_buttons_cooldowns[i].on = false;
+					}
+
+				}
+
+				if(game.score.gold < costs[i])
+					this.gui_buttons_rovers[i].visible = true;
+				else
+					this.gui_buttons_rovers[i].visible = false;
+
+				if(c.on)
+				{
+
+					var diff = (c.current - game.time.now)/c.time;
+					this.gui_buttons_overs[i].visible = true;
+					this.gui_buttons_overs[i].scale.y = (1-diff)*(game.extra.scale/1.4);
+					this.gui_buttons_overs[i].y = r.y+(game.extra.scale/1.4)+14*(game.extra.scale/1.4)*diff;
+				}
+				else
+				{
+					this.gui_buttons_overs[i].scale.y = game.extra.scale/1.4;
+					this.gui_buttons_overs[i].visible = false;
+				}
+
+				if(mx > r.x && mx < r.x+r.width) {
+					if(my > r.y && my < r.y+r.height)
+					{
+						if(!c.on && game.score.gold >= costs[i])
+							this.gui_buttons_overs[i].visible = true;
+
+						if(game.input.activePointer.isDown && !c.on && game.score.gold >= costs[i])
+						{
+							// Buy unit
+							if(i==0)
+							{
+								var u1 = new UnitTest(1, game.extra.length+64, game.height - 256, game);
+								this.units.push(u1);
+								this.player_units.push(u1);
+								u1.speed *= -1;
+
+							}
+							else if(i==1)
+							{
+								var u1 = new UnitTest2(1, game.extra.length+64, game.height - 256, game);
+								this.units.push(u1);
+								this.player_units.push(u1);
+								u1.speed *= -1;
+							}
+							else 
+							{
+								var u1 = new UnitTest3(1, game.extra.length+64, game.height - 256, game);
+								this.units.push(u1);
+								this.player_units.push(u1);
+								u1.speed *= -1;
+							}
+
+							this.click.play();
+							game.score.total--;
+							game.score.gold -= costs[i];
+							var t = cds[i]*1000;
+							this.gui_buttons_cooldowns[i] = { on:true, current: game.time.now+t, time:t };
+							break;
+						}
+					}
+				}
+
+			}
 		}
 	},
 	updateObjectPosition: function(object)
 	{
+		//console.log(object);
 		if(object.hasOwnProperty('base')) 
 		{
-			//console.log(object);
 			object.x = object.base.x - this.map.x * object.base.parallel;
 			object.y =  object.base.y;
+		}
+		else if(object.type == Phaser.GROUP)
+		{
+			object.forEachAlive(this.updateObjectPosition2, this);
+		}
+	},
+	updateObjectPosition2: function(object)
+	{
+		//console.log(object);
+		if(object.hasOwnProperty('base')) 
+		{
+			object.x = object.base.x - this.map.x * object.base.parallel;
+			object.y =  object.base.y;
+		}
+		else if(object.type == Phaser.GROUP)
+		{
+			object.forEachAlive(this.updateObjectPosition, this);
 		}
 	},
 	showDead: function(object)
 	{
+
 		if(this.deadParticles.length < 50)
 		{
 		    var emitter = game.add.emitter(object.x, object.y, 16);
@@ -489,6 +820,7 @@ InGame.prototype =
 			emitter.maxParticleScale = game.extra.scale*64;
 			emitter.smoothed = false;
 			emitter.timeout = game.time.now + 2000;
+		    emitter.x = object.x - game.extra.ingame.map.x;
 
 			emitter.start(true, 1500, null, 16);
 		}
@@ -498,6 +830,7 @@ InGame.prototype =
 	},
 	showDamage: function(d, object, body)
 	{
+		this.hurt.play();
 		if(this.deadParticles.length < 50)
 		{
 		    var emitter = game.add.emitter(body.x, body.y, 8);
@@ -514,6 +847,8 @@ InGame.prototype =
 			emitter.smoothed = false;
 			emitter.timeout = game.time.now + 2100;
 		    emitter.start(true, 2000, null, 8);
+		    emitter.x = object.x - game.extra.ingame.map.x;
+
 		}
 		var damageText = game.add.bitmapText(object.x, object.y, 'pixel_font_red', "-"+d, 10, this.infoTextGroup);
 
@@ -539,5 +874,221 @@ InGame.prototype =
             tween = null;
 		});
 		tween.start();
+
+		this.gold.play();
+	},
+	explode: function(c)
+	{
+		var object = c.explodePosition();
+
+		for(var i = 0; i < 30; i++)
+		{
+			this.createExplosion(object.x + game.rnd.integerInRange(-128, 64), object.y + game.rnd.integerInRange(-128, 128), 0.7 + game.rnd.frac()/0.7);
+		}
+		/*if(this.deadParticles.length < 50)
+		{
+		    var emitter = game.add.emitter(object.x, object.y, 256);
+			this.deadParticles.push(emitter);
+		    emitter.makeParticles( [ 'fire' ] );
+		    emitter.bringToTop = true;
+		    emitter.gravity = 200;
+		    //emitter.setScale(game.extra.scale, game.extra.scale, game.extra.scale, game.extra.scale, 1000);
+	    	emitter.setXSpeed(-200, 200);
+	    	emitter.setYSpeed(-100, -360);
+	    	//emitter.forEach(function(a) { a.scale.setTo(game.extra.scale, game.extra.scale); }, this);
+	    	emitter.minParticleScale = game.extra.scale/8;
+			emitter.maxParticleScale = game.extra.scale/4;
+			emitter.smoothed = false;
+			emitter.timeout = game.time.now + 2100;
+		    emitter.x = object.x - game.extra.ingame.map.x;
+		    emitter.forEach(function(p) {
+			     p.smoothed = false;
+			});
+		    emitter.start(true, 5000, null, 256);
+		    emitter.forEach(function(p) {
+			     p.smoothed = false;
+			});
+		}*/
+	},
+	createExplosion:  function(x, y, d) {
+	    var explosion = this.explosions.getFirstDead();
+
+	    if (explosion == null) {
+	        explosion = game.add.sprite(0, 0, 'fire');
+	        explosion.anchor.setTo(0.5, 0.5);
+	        explosion.scale.setTo(1, 1);
+	        //explosion.smoothed = false;
+
+	        var animation = explosion.animations.add('boom', [0,1,2,3], d*60, false);
+	        animation.killOnComplete = true;
+
+	        this.explosions.add(explosion);
+	    }
+
+	    explosion.revive();
+
+	    explosion.x = x;
+	    explosion.y = y;
+
+	    explosion.angle = game.rnd.integerInRange(0, 360);
+
+	    this.sexplode.play();
+	    explosion.animations.play('boom');
+	    return explosion;
+	},
+	showWin: function() 
+	{
+		this.show = true;
+
+		this.castle1.removeBar();
+		this.castle2.removeBar();
+
+		this.winlose = game.add.sprite(game.width/2, game.height/2, 'gui_winlose');
+		this.winlose.anchor.setTo(0.5, 0.5);
+		this.winlose.smoothed = false;
+		this.winlose.scale.setTo(game.extra.scale, game.extra.scale);
+
+		var x = game.width/2 - 20*(game.extra.scale) + 20;
+		var y = game.height/2 - 22*(game.extra.scale) + 32;
+		this.winlose.text1 = game.add.bitmapText(x, y, 'pixel_font_gold', 'Victory!', 24);
+		this.winlose.text2 = game.add.bitmapText(x, y+32+4, 'pixel_font', 'You have defeated', 13);
+		this.winlose.text3 = game.add.bitmapText(x, y+48+2+4, 'pixel_font', 'the enemy and destory', 13);
+		this.winlose.text4 = game.add.bitmapText(x, y+64+4+4, 'pixel_font', 'the connection between', 13);
+		this.winlose.text5 = game.add.bitmapText(x, y+80+6+4, 'pixel_font', 'their world and', 13);
+		this.winlose.text6 = game.add.bitmapText(x, y+96+8+4, 'pixel_font', 'ours!', 13);
+
+		this.winlose.text7 = game.add.bitmapText(x, y+112+8+10, 'pixel_font', 'score: ' + game.score.total, 13);
+
+		this.winlose.buttontext1 = game.add.bitmapText(game.width/2 - 12*(game.extra.scale), y + 23*game.extra.scale, 'pixel_font', 'Play again', 15);
+		this.winlose.buttontext2 = game.add.bitmapText(game.width/2 - 12*(game.extra.scale), y + 32*game.extra.scale, 'pixel_font', 'Rate (LD)', 15);
+
+		this.winlose.rects = new Array();
+		this.winlose.overs = new Array();
+		this.winlose.clicks = new Array();
+		this.winlose.buttons = new Array();
+
+		var x = game.width/2 - (20)*(game.extra.scale) + 5*game.extra.scale;
+		var y = game.height/2 - (22)*(game.extra.scale) + 24*game.extra.scale;
+		var w = (30)*(game.extra.scale);
+		var h = (6)*(game.extra.scale);
+		var r = { x: x, y: y, width: w, height: h };
+		this.winlose.rects[0] = r;
+
+		var o2 = game.add.sprite(x, y+(game.extra.scale)-0.1, 'gui_overbutton');
+		o2.alpha = 0.3;
+		o2.visible = false;
+		o2.scale.setTo((game.extra.scale)*(30/9), (game.extra.scale)*(6/14));
+		this.winlose.overs[0] = o2;
+
+		this.winlose.clicks[0] = function() { console.log("again"); window.location.reload() };
+
+		var y = game.height/2 - (22)*(game.extra.scale) + 34*game.extra.scale;
+		var r = { x: x, y: y, width: w, height: h };
+		this.winlose.rects[1] = r;
+
+		var o2 = game.add.sprite(x, y-0.1, 'gui_overbutton');
+		o2.alpha = 0.3;
+		o2.visible = false;
+		o2.scale.setTo((game.extra.scale)*30/9, (game.extra.scale)*6/14);
+		this.winlose.overs[1] = o2;
+		this.winlose.clicks[1] = function() { console.log("rate"); OpenInNewTab(); };
+
+		this.winlose.buttons[0] = true;
+		this.winlose.buttons[1] = true;
+	},
+	showLose: function() 
+	{
+
+		this.winlose = game.add.sprite(game.width/2, game.height/2, 'gui_winlose');
+		this.winlose.anchor.setTo(0.5, 0.5);
+		this.winlose.smoothed = false;
+		this.winlose.scale.setTo(game.extra.scale, game.extra.scale);
+
+		var x = game.width/2 - 20*(game.extra.scale) + 20;
+		var y = game.height/2 - 22*(game.extra.scale) + 32;
+		this.winlose.text1 = game.add.bitmapText(x, y, 'pixel_font_red', 'DEFEAT!', 22);
+		this.winlose.text2 = game.add.bitmapText(x, y+32+4, 'pixel_font', 'You have failed to ', 11);
+		this.winlose.text3 = game.add.bitmapText(x, y+48+4, 'pixel_font', 'protect this world', 11);
+		this.winlose.text4 = game.add.bitmapText(x, y+64+2+4, 'pixel_font', 'from the enemies!', 11);
+		this.winlose.text5 = game.add.bitmapText(x, y+80+4+4, 'pixel_font', 'They have now', 11);
+		this.winlose.text6 = game.add.bitmapText(x, y+96+6+4, 'pixel_font', 'sucessfully connected', 10);
+		this.winlose.text7 = game.add.bitmapText(x, y+112+7+4, 'pixel_font', 'our worlds together!', 10);
+
+		this.winlose.text8 = game.add.bitmapText(x+10, y+112+8+22, 'pixel_font', 'score: ' + game.score.total, 13);
+
+		this.winlose.buttontext1 = game.add.bitmapText(game.width/2 - 12*(game.extra.scale), y + 23*game.extra.scale, 'pixel_font', 'Play again', 15);
+		this.winlose.buttontext2 = game.add.bitmapText(game.width/2 - 12*(game.extra.scale), y + 32*game.extra.scale, 'pixel_font', 'Rate (LD)', 15);
+
+		this.winlose.rects = new Array();
+		this.winlose.overs = new Array();
+		this.winlose.clicks = new Array();
+		this.winlose.buttons = new Array();
+
+		var x = game.width/2 - (20)*(game.extra.scale) + 5*game.extra.scale;
+		var y = game.height/2 - (22)*(game.extra.scale) + 24*game.extra.scale;
+		var w = (30)*(game.extra.scale);
+		var h = (6)*(game.extra.scale);
+		var r = { x: x, y: y, width: w, height: h };
+		this.winlose.rects[0] = r;
+
+		var o2 = game.add.sprite(x, y+(game.extra.scale)-0.1, 'gui_overbutton');
+		o2.alpha = 0.3;
+		o2.visible = false;
+		o2.scale.setTo((game.extra.scale)*(30/9), (game.extra.scale)*(6/14));
+		this.winlose.overs[0] = o2;
+
+		this.winlose.clicks[0] = function() { console.log("again"); window.location.reload() };
+
+		var y = game.height/2 - (22)*(game.extra.scale) + 34*game.extra.scale;
+		var r = { x: x, y: y, width: w, height: h };
+		this.winlose.rects[1] = r;
+
+		var o2 = game.add.sprite(x, y-0.1, 'gui_overbutton');
+		o2.alpha = 0.3;
+		o2.visible = false;
+		o2.scale.setTo((game.extra.scale)*30/9, (game.extra.scale)*6/14);
+		this.winlose.overs[1] = o2;
+		this.winlose.clicks[1] = function() { console.log("rate"); OpenInNewTab(); };
+
+		this.winlose.buttons[0] = true;
+		this.winlose.buttons[1] = true;
+
+		this.castle1.removeBar();
+		this.castle2.removeBar();
+
+		var emitter = game.add.emitter(game.world.centerX, 0, 400);
+
+		emitter.width = game.world.width;
+		// emitter.angle = 30; // uncomment to set an angle for the rain.
+
+		emitter.makeParticles('rain');
+
+		emitter.minParticleScale = 0.1;
+		emitter.maxParticleScale = 0.5;
+
+		emitter.setYSpeed(300, 500);
+		emitter.setXSpeed(-5, 5);
+
+		emitter.minRotation = 0;
+		emitter.maxRotation = 0;
+
+		emitter.start(false, 1600, 5, 0);
+
+		this.show = true;
+
+		var tween = game.add.tween(this.sky);
+		tween.to({ alpha: 0.0 }, 1000);
+		tween.start();
+
+		var tween = game.add.tween(this.scope);
+		tween.to({ alpha: 1.0 }, 1000);
+		tween.start();
+
+		for (var i = 0; i < this.clouds.length; i++) {
+			var c = this.clouds[i].get_darker();
+			var tween = game.add.tween(this.clouds[i]);
+			tween.to({ tx: c }, 1000);
+			tween.start();
+		};
 	}
 };

@@ -38,10 +38,14 @@ Loader.prototype =
 
 		game.load.image('red', 'assets/red.png');
 		game.load.image('green', 'assets/green.png');
+		game.load.spritesheet('fire', 'assets/fire.png', 128, 128);
+		game.load.image('rain', 'assets/rain.png');
 
 
 		/* GUI */
 		game.load.image('gui_main_base', 'assets/gui_main_base.png');
+		game.load.image('gui_winlose', 'assets/gui_win_lose.png');
+		game.load.image('gui_menu', 'assets/gui_menu.png');
 		game.load.image('gui_overbutton', 'assets/gui_overbutton.png');
 
 		/* TOWERS */
@@ -54,6 +58,8 @@ Loader.prototype =
 		game.load.image('background2', 'assets/background2.png');
 		game.load.image('background3', 'assets/background3.png');
 		game.load.image('sky', 'assets/sky.png');
+		game.load.image('dark_sky', 'assets/dark_sky.png');
+		game.load.image('scope', 'assets/scope.png');
 
 		game.load.image('cloud1', 'assets/cloud1.png');
 		game.load.image('cloud2', 'assets/cloud2.png');
@@ -76,9 +82,18 @@ Loader.prototype =
 		game.load.image('arrow', "assets/arrow.png");
 
 
+		/* SOUND */
+
+		game.load.audio('bow', 'assets/bow.wav');
+		game.load.audio('click', 'assets/click.wav');
+		game.load.audio('explode', 'assets/explode.wav');
+		game.load.audio('hit', 'assets/hit.wav');
+		game.load.audio('hurt', 'assets/hurt.wav');
+		game.load.audio('gold', 'assets/gold.wav');
+		game.load.audio('music', 'assets/LD30.mp3');
 	},
 	create: function()
 	{
-		game.state.start('game');
+		game.state.start('intro');
 	}
 };
