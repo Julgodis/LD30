@@ -111,7 +111,7 @@ Castle.prototype =
 					cdx = Math.abs(unit.sprite.base.x - (game.extra.length-128));
 				}
 
-				if(game.extra.scale*22*7 >= cdx)
+				if(game.extra.scale*22 >= cdx)
 				{
 					game.extra.ingame.createExplosion(unit.sprite.base.x, unit.sprite.base.y, 1);
 					this.canAttack = game.time.now + 1200;
