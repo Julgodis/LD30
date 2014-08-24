@@ -8,9 +8,10 @@
 var InGame = function (game) { };
 InGame.prototype = 
 {
-	// Not needed, everythings is already loaded!
+	// Not needed, everything is already loaded!
 	//preload: function() {} 
 
+	sky: null,
 	background1: null,
 	background2: null,
 	background3: null,
@@ -37,15 +38,23 @@ InGame.prototype =
 	create: function()
 	{
 		game.extra.ingame = this;
-		game.extra.length = 800*1.8;
+		game.extra.length = 800*2;
 		game.world.setBounds(0, 0, game.extra.length, 600);
-		game.extra.world = game.add.group();
 
+		/* SKY */
+
+		this.sky = game.add.sprite(0, game.height, 'sky');
+		this.sky.smoothed = false;
+		this.sky.anchor.setTo(0, 1);
+
+
+		game.extra.world = game.add.group();
 		this.map.x = game.extra.length-game.width;
+
 
 		/* Add background */
 
-		this.background1 = game.add.game.add.sprite(0, game.height+4*game.extra.scale, 'background1', null, game.extra.world);
+		this.background1 = game.add.sprite(0, game.height+4*game.extra.scale, 'background1', null, game.extra.world);
 		this.background1.smoothed = false;
 		this.background1.anchor.setTo(0, 1);
 		this.background1.scale.setTo(game.extra.scale*1.2*0.8, game.extra.scale*0.8);
@@ -56,7 +65,7 @@ InGame.prototype =
 		this.background1.base.y = this.background1.y;
 		this.background1.base.parallel = 0.1;
 
-		this.background2 = game.add.game.add.sprite(0, game.height+4*game.extra.scale, 'background2', null, game.extra.world);
+		this.background2 = game.add.sprite(0, game.height+4*game.extra.scale, 'background2', null, game.extra.world);
 		this.background2.smoothed = false;
 		this.background2.anchor.setTo(0, 1);
 		this.background2.scale.setTo(game.extra.scale*1.2*0.8, game.extra.scale*0.8);
@@ -68,7 +77,7 @@ InGame.prototype =
 		this.background2.base.parallel = 0.2;
 
 
-		this.background3 = game.add.game.add.sprite(0, game.height+4*game.extra.scale, 'background3', null, game.extra.world);
+		this.background3 = game.add.sprite(0, game.height+4*game.extra.scale, 'background3', null, game.extra.world);
 		this.background3.smoothed = false;
 		this.background3.anchor.setTo(0, 1);
 		this.background3.scale.setTo(game.extra.scale*1.2*0.8, game.extra.scale*0.8);

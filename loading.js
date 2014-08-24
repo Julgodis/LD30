@@ -53,6 +53,7 @@ Loader.prototype =
 		game.load.image('background1', 'assets/background1.png');
 		game.load.image('background2', 'assets/background2.png');
 		game.load.image('background3', 'assets/background3.png');
+		game.load.image('sky', 'assets/sky.png');
 
 		game.load.image('cloud1', 'assets/cloud1.png');
 		game.load.image('cloud2', 'assets/cloud2.png');

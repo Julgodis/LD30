@@ -140,7 +140,7 @@ Unit.prototype =
 		if(this.health <= 0)
 		{
 			game.extra.ingame.showDead({ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height-6)*this.scale});
-			if(this.player == 1)
+			if(this.player != 1)
 			{
 				game.score.gold += this.gold;
 				game.extra.ingame.showGold({ x: this.sprite.x - (12*this.scale)/2, y: this.sprite.y - (this.size.height +12)*this.scale, gold:this.gold});

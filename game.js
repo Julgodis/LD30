@@ -9,7 +9,7 @@ var game = new Phaser.Game(1200, 600, Phaser.AUTO, 'game');
 game.extra = {
 	world: null,
 	scale: 8.0,
-	treeCount: 68,
+	treeCount: 80,
 	cloudCount: 10,
 	length: 0,
 	ingame: null

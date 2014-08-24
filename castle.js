@@ -27,7 +27,7 @@ Castle.prototype =
 		}
 		else
 		{
-			this.sprite = game.add.sprite(game.extra.length - 32, game.height - /* ground height */ 8*game.extra.scale, 'good_tower1', null, game.extra.world);
+			this.sprite = game.add.sprite(game.extra.length - 64, game.height - /* ground height */ 8*game.extra.scale, 'good_tower1', null, game.extra.world);
 			this.sprite.anchor.setTo(1.0, 1.0);
 		}
 

@@ -113,7 +113,7 @@ Arrow.prototype.update = function()
 		}
 	}
     this.base.x += this.speed*game.time.elapsed;
-    this.base.y += Math.cos((this.buffer+game.time.now)/200.0)*(game.time.elapsed/40.0);
+    this.base.y += Math.cos((this.buffer+game.time.now)/200.0)*(game.time.elapsed/60.0);
     //this.x = this.base.x;
     //this.y = this.base.y;
    // console.log(this.base);
@@ -229,7 +229,7 @@ UnitTest3.prototype.shotAt = function(target)
 	this.sprite.play('basic_attack');
 
 	var x = this.sprite.base.x;
-	var y = this.sprite.base.y - (this.size.height-6)*this.scale;
+	var y = this.sprite.base.y - (this.size.height/2)*this.scale;
 
 	var dir = Math.abs(this.speed)/this.speed;
 	var arrow = new Arrow(game, x, y, dir*this.basicArrowSpeed, this);

@@ -37,6 +37,9 @@ Cloud.prototype =
 	},
 	update: function()
 	{
+		this.direction += Math.cos((this.r+game.time.now)/1000.0)*0.001;
+		this.direction = Math.max(-1, Math.min(1, this.direction));
+
 		this.sprite.base.x += this.direction*game.time.elapsed*0.05;
 		this.sprite.base.y += Math.cos((this.r+game.time.now)/1000.0)*game.time.elapsed*0.01;
 
