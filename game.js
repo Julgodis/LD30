@@ -22,7 +22,7 @@ game.score = {
 };
 
 costs = [15, 60, 100, 800];
-cds = [1.2, 2.1, 2.8, 10.0];
+cds = [1.3, 2.2, 2.8, 10.0];
 
 game.state.add('start', Start);
 game.state.add('loading', Loader);
@@ -45,8 +45,8 @@ Array.prototype.remove = function() {
     return this;
 };
 
-function OpenInNewTab(url) {
-	window.location = url;
+function OpenInNewTab() {
+	window.location = "http://www.ludumdare.com/compo/ludum-dare-30/?action=preview&uid=16119";
 }
 
 /*
