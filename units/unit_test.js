@@ -19,6 +19,8 @@ var UnitTest = function(p, x, y, game)
 	this.basicAttackSpeed = 1;
 	this.basicAttackDamage = 30;
 	this.basicAttackTimer = 0;
+	this.maxHealth = 150.0;
+	this.health = 150.0;
 
 	this.targetRange = 16*scale*0.8;
 	this.speed = 1.3 + 0.05*game.rnd.frac();

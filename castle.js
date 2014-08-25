@@ -11,8 +11,8 @@ Castle.prototype =
 {
 	type: 0,
 	player: 0,
-	health: 1000.0,
-	maxHealth: 1000.0,
+	health: 2000.0,
+	maxHealth: 2000.0,
 	lastHealth: 0,
 
 	healthbar1: null,
@@ -103,7 +103,7 @@ Castle.prototype =
 				var unit = game.extra.ingame.units[i];
 				if(unit.isDead() || unit.player == this.player) continue;
 
-				if(x >= 8) break;
+				if(x >= 10) break;
 
 				var cdx = Math.abs(unit.sprite.base.x - (128));
 				if(this.player==1)
@@ -111,11 +111,11 @@ Castle.prototype =
 					cdx = Math.abs(unit.sprite.base.x - (game.extra.length-128));
 				}
 
-				if(game.extra.scale*22 >= cdx)
+				if(game.extra.scale*22*2 >= cdx)
 				{
 					game.extra.ingame.createExplosion(unit.sprite.base.x, unit.sprite.base.y, 1);
-					this.canAttack = game.time.now + 1200;
-					unit.attack(47);
+					this.canAttack = game.time.now + 3500;
+					unit.attack(75);
 					x++;
 				}
 

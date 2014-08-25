@@ -278,6 +278,9 @@ InGame.prototype =
 		this.gui_gold_text = game.add.bitmapText(game.width - 110, 20, 'pixel_font_gold', game.score.gold+"", 20);
 		this.gui_gold_text_u = game.add.bitmapText(game.width - 120, 45, 'pixel_font_gold', "GOLD", 20);
 
+		this.gui_base.visible = false;
+		this.gui_gold_text.visible = false;
+		this.gui_gold_text_u.visible = false;
 
 		this.gui_buttons_icons = new Array();
 		this.gui_buttons_costs = new Array();
@@ -289,11 +292,15 @@ InGame.prototype =
 		{
 			var t = game.add.sprite(game.width - 80*(game.extra.scale/1.4) + (11 + 14.2*i)*(game.extra.scale/1.4), 3.5*(game.extra.scale/1.4), 'unit'+(i+1), null, game.extra.world);
 			t.smoothed = false;
+			t.visible = false;
 			t.anchor.setTo(1, 0);
 			t.scale.setTo((game.extra.scale/3.5) * (i==3?0.5:1), (game.extra.scale/3.5) * (i==3?0.5:1));
 			this.gui_buttons_icons[i] = t;
+			
+			
 
 			var c = game.add.bitmapText(game.width - 80*(game.extra.scale/1.4) + (11 + 14.0*i)*(game.extra.scale/1.4) - (11*8)/3 - 14, 82, 'pixel_font_gold', ""+costs[i] , 12);
+			c.visible = false;
 			this.gui_buttons_costs[i] = c;
 
 			var x = game.width - (78-(11+3)*i)*(game.extra.scale/1.4);
@@ -364,6 +371,7 @@ InGame.prototype =
 		o2.scale.setTo((game.extra.scale)*(50/9), (game.extra.scale)*(6/14));
 		this.guimenu.overs[0] = o2;
 
+
 		this.guimenu.clicks[0] = function() 
 		{ 
 			game.extra.ingame.menu = false; 
@@ -393,7 +401,7 @@ InGame.prototype =
 		this.bow.volume = 0.5;
 
 		this.sexplode = game.add.audio('explode');
-		this.sexplode.volume = 0.5;
+		this.sexplode.volume = 0.3;
 
 		this.hit = game.add.audio('hit');
 		this.hit.volume = 0.5;
@@ -467,25 +475,26 @@ InGame.prototype =
 		if(this.preview != -1)
 		{
 			if(this.preview == 0)
-				this.map.x -= 1.4;
-			else if(this.preview == 1)
-				this.map.x += 1.4;
+				this.map.x -= 1.4*(game.time.elapsed/8);
+			else if(this.preview >= 20)
+				this.map.x += 1.4*(game.time.elapsed/8);
 
 			if(this.map.vx > 18) this.map.vx = 18;
 			if(this.map.vx < -18) this.map.vx = -18;
 
-			this.map.x += this.map.vx;
-			if(this.map.x < 0) 
+			this.map.x += this.map.vx*game.time.elapsed;
+			if(this.map.x <= 0) 
 			{
 				this.map.x = 0;
-				this.preview = 1;
+				this.map.vx = 0;
+				this.preview++;
 			}
 			if(this.map.x+game.width > game.extra.length) 
 		    {
 			 	this.map.x = game.extra.length-game.width;
 			 	this.preview = -1;
 
-	 			var goldText = game.add.bitmapText(game.width/2, game.height/2, 'pixel_font', 'Start!', 12);
+	 			var goldText = game.add.bitmapText(game.width/2-10, game.height/2, 'pixel_font', 'Start!', 22);
 				var tween = game.add.tween(goldText);
 				tween.to({ alpha: 0.0, y: game.height/2 - 100 }, 3000);
 				tween.onComplete.add(function() { 
@@ -495,6 +504,17 @@ InGame.prototype =
 		            tween = null;
 				});
 				tween.start();
+
+				this.gui_base.visible = true;
+				this.gui_gold_text.visible = true;
+				this.gui_gold_text_u.visible = true;
+
+				for(var i = 0; i < 4; i++)
+				{
+					this.gui_buttons_icons[i].visible = true;
+					this.gui_buttons_costs[i].visible = true;
+					
+				}
 			}
 			this.map.vx *= 0.98;
 
@@ -522,7 +542,7 @@ InGame.prototype =
 						this.showLose();
 
 					}
-					else this.map.vx -= 0.2;
+					else this.map.vx -= 0.2*game.time.elapsed;
 				}
 				else 
 				{
@@ -531,7 +551,7 @@ InGame.prototype =
 						this.showWin();
 
 					}
-					else this.map.vx += 0.2;
+					else this.map.vx += 0.2*game.time.elapsed;
 				}
 			}
 
@@ -609,16 +629,16 @@ InGame.prototype =
 			if(my > 150)
 			{
 				if(mx <= 200)
-					this.map.vx -= 0.015 + ((200-mx)*(200-mx))/3200000;
+					this.map.vx -= (0.015 + ((200-mx)*(200-mx))/3200000)*game.time.elapsed;
 				else if(mx >= game.width-200)
-					this.map.vx += 0.015 + ((mx-game.width-200)*(mx-game.width-200))/3200000;
+					this.map.vx += (0.015 + ((mx-game.width-200)*(mx-game.width-200))/3200000)*game.time.elapsed;
 			}
 		}
 
 		if(this.map.vx > 18) this.map.vx = 18;
 		if(this.map.vx < -18) this.map.vx = -18;
 
-		this.map.x += this.map.vx;
+		this.map.x += this.map.vx*(game.time.elapsed/16);
 		if(this.map.x < 0) this.map.x = 0;
 		if(this.map.x+game.width > game.extra.length) this.map.x = game.extra.length-game.width;
 		this.map.vx *= 0.98;
@@ -963,7 +983,7 @@ InGame.prototype =
 		this.winlose.text3 = game.add.bitmapText(x, y+48+2+4, 'pixel_font', 'the enemy and ', 13);
 		this.winlose.text4 = game.add.bitmapText(x, y+64+4+4, 'pixel_font', 'destory the ', 13);
 		this.winlose.text5 = game.add.bitmapText(x, y+80+6+4, 'pixel_font', 'connection between', 13);
-		this.winlose.text6 = game.add.bitmapText(x, y+96+8+4, 'pixel_font', 'their world and ours!', 13);
+		this.winlose.text6 = game.add.bitmapText(x, y+96+8+4, 'pixel_font', 'their world and ours!', 10);
 
 		this.winlose.text7 = game.add.bitmapText(x, y+112+8+10, 'pixel_font', 'score: ' + game.score.total, 13);
 

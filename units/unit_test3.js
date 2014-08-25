@@ -170,12 +170,12 @@ var UnitTest3 = function(p, x, y, game)
 	this.dojump = false;
 
 	this.basicAttackSpeed = 1.5;
-	this.basicAttackDamage = 19;
+	this.basicAttackDamage = 18;
 	this.basicAttackTimer = 0;
 	this.basicArrowSpeed = 0.3;
 	this.isShoting = false;
 
-	this.targetRange = 22*scale*7;
+	this.targetRange = 22*scale*5.5;
 	this.speed = 0.9 + 0.05*game.rnd.frac();
 	this.gold = 105;
 	this.arrows = new Array();

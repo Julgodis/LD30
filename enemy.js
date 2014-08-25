@@ -9,7 +9,7 @@ var EnemyAI = function(game) { };
 
 EnemyAI.prototype = 
 {
-	gold: 40,
+	gold: 70,
 	goldPP: 0,
 
 	cd1: 0,
@@ -29,7 +29,7 @@ EnemyAI.prototype =
 		if(game.time.now >= this.goldPP)
 		{
 			this.gold++;
-			this.goldPP = game.time.now + 5000;
+			this.goldPP = game.time.now + 2000;
 		}
 
 		if(level <= 1.5)
